@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-  
 import pymysql
 import sys
+import traceback
 class zabbix2aom(object):
     
     def __init__(self):
@@ -76,14 +77,15 @@ class zabbix2aom(object):
         
     def putData(self,**kwages):
         cur=self.db.cursor() 
-        cur.execute(kwages['sql'])
-    def test(self,):
-        with open('/etc/zabbix/alertscripts/msg1.log','a')as myfile:
-            myfile.write(sys.argv[1]+'\n')		
+        cur.execute(kwages['sql'])	
 			
 def main():
-    r=zabbix2aom()
-    r.run()
-	
+    try:
+        r=zabbix2aom()
+        r.run()
+    except Exception as info: 
+        with open('/etc/zabbix/alertscripts/msg1.log','a')as myfile:
+            myfile.write(traceback.format_exc()+'\n')	
+
 if __name__ == '__main__':
     main()
