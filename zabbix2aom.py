@@ -59,13 +59,18 @@ class zabbix2aom(object):
         self.putData(**{'sql':sql})
         
     def createWarn(self,**kwages):
-        sql="insert into pps_warntask(warnid,warntype,enviname,warndesc,warnlevel,createtime,status,userid)values(%s,'%s','%s','%s','%s',now(),1,%s)"%(kwages['id'],kwages['type'],kwages['evn'],kwages['msg'],kwages['level'],kwages['userid'])
+        sql="insert into pps_warntask(warnid,warntype,enviname,warndesc,warnlevel,createtime,status,userid)values(%s,'%s','%s','%s','%s',now(),1,%s)"%(kwages['id'],kwages['type'],kwages['evn'],kwages['msg'],str(self.getWarnLevel(**{'levelname':kwages['level']})),kwages['userid'])
         print(sql)
         self.putData(**{'sql':sql})    
         
     def setWarnStatus(self,**kwages):
         sql="update pps_warntask set recoverytime=now() where warnid=%s" %(kwages['id'])    
         self.putData(**{'sql':sql})  
+        
+    def getWarnLevel(self,**kwages):
+        sql="select level from pps_warnlevel where levelname='%s'"%(kwages['levelname'])
+        print(sql)
+        return(self.getData(**{'sql':sql})[0]['level'])
         
     def getLaseID(self):
         return(self.getData(**{'sql':'SELECT LAST_INSERT_ID() lastid'})[0])  
@@ -77,15 +82,18 @@ class zabbix2aom(object):
         
     def putData(self,**kwages):
         cur=self.db.cursor() 
-        cur.execute(kwages['sql'])	
+        cur.execute(kwages['sql'])
+            
 			
 def main():
     try:
         r=zabbix2aom()
         r.run()
     except Exception as info: 
+        error=traceback.format_exc()
+        print(error)
         with open('/etc/zabbix/alertscripts/msg1.log','a')as myfile:
-            myfile.write(traceback.format_exc()+'\n')	
+            myfile.write(error+'\n')	
 
 if __name__ == '__main__':
     main()
