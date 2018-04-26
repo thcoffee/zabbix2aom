@@ -2,6 +2,7 @@
 import pymysql
 import sys
 import traceback
+import time
 class zabbix2aom(object):
     
     def __init__(self):
@@ -17,6 +18,7 @@ class zabbix2aom(object):
 
         self.db=pymysql.connect(**dbcon)
         self.task=eval(sys.argv[1])
+        self.wlog()
         
     def run(self):
         if self._isExistsWarn(**self.task):
@@ -70,7 +72,11 @@ class zabbix2aom(object):
     def getWarnLevel(self,**kwages):
         sql="select level from pps_warnlevel where levelname='%s'"%(kwages['levelname'])
         print(sql)
-        return(self.getData(**{'sql':sql})[0]['level'])
+        temp=self.getData(**{'sql':sql})
+        if len(temp)>0:
+            return(temp[0]['level'])
+        else:
+            return(5)
         
     def getLaseID(self):
         return(self.getData(**{'sql':'SELECT LAST_INSERT_ID() lastid'})[0])  
@@ -83,7 +89,10 @@ class zabbix2aom(object):
     def putData(self,**kwages):
         cur=self.db.cursor() 
         cur.execute(kwages['sql'])
-            
+    
+    def wlog(self):
+        with open('/etc/zabbix/alertscripts/msg2.log','a')as myfile:    
+            myfile.write(str(self.task)+'\n')
 			
 def main():
     try:
@@ -93,6 +102,8 @@ def main():
         error=traceback.format_exc()
         print(error)
         with open('/etc/zabbix/alertscripts/msg1.log','a')as myfile:
+            myfile.write(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))+'\n')
+            myfile.write(sys.argv[1]+'\n')
             myfile.write(error+'\n')	
 
 if __name__ == '__main__':
