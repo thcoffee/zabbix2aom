@@ -17,7 +17,7 @@ class zabbix2aom(object):
                 }
 
         self.db=pymysql.connect(**dbcon)
-        self.task=eval(sys.argv[1])
+        self.task=eval(str(sys.argv[1].replace('\n','\\n')))
         self.wlog()
         
     def run(self):
@@ -103,8 +103,8 @@ def main():
         print(error)
         with open('/etc/zabbix/alertscripts/msg1.log','a')as myfile:
             myfile.write(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))+'\n')
-            myfile.write(sys.argv[1]+'\n')
-            myfile.write(error+'\n')	
+            myfile.write(error+'\n')
+            	
 
 if __name__ == '__main__':
     main()
